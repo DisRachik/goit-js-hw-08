@@ -10,5 +10,10 @@ const onRememberTimeVideo = ({ seconds }) => {
   localStorage.setItem(VIDEO_TIME_KEY_STORAGE, seconds);
 };
 
-player.setCurrentTime(localStorage.getItem(VIDEO_TIME_KEY_STORAGE));
+const playTimeVideo = () => {
+  const saveTime = localStorage.getItem(VIDEO_TIME_KEY_STORAGE);
+  saveTime && player.setCurrentTime(saveTime);
+};
+
 player.on('timeupdate', _throttle(onRememberTimeVideo, 1000));
+playTimeVideo();
