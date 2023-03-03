@@ -1,35 +1,40 @@
 import _throttle from 'lodash.throttle';
 
-const FORM_CONTENT_KEY_STORAGE = 'feedback-form-state';
+const FORM_KEY_STORAGE = 'feedback-form-state';
 
-const formEl = document.querySelector('.feedback-form');
-let previousFormContent = localStorage.getItem(FORM_CONTENT_KEY_STORAGE);
+const refs = {
+  formEl: document.querySelector('.feedback-form'),
+  emailEl: document.querySelector('.feedback-form [name="email"]'),
+  textareaEl: document.querySelector('.feedback-form [name="message"]'),
+};
+const savedDataInStorage = localStorage.getItem(FORM_KEY_STORAGE);
+let formData = savedDataInStorage ? JSON.parse(savedDataInStorage) : {};
 
 const unsentFormData = function () {
-  if (previousFormContent) {
-    Object.entries(JSON.parse(previousFormContent)).forEach(([key, value]) => {
-      formEl.elements[key].value = value;
-    });
-  }
+  Object.entries(formData).forEach(([key, value]) => {
+    refs.formEl.elements[key].value = value;
+  });
 };
 
-const onInputText = e => {
-  const formContent = previousFormContent
-    ? JSON.parse(previousFormContent)
-    : {};
-  formContent[e.target.name] = e.target.value;
-  localStorage.setItem(FORM_CONTENT_KEY_STORAGE, JSON.stringify(formContent));
+const onFormSave = e => {
+  formData[e.target.name] = e.target.value;
+  localStorage.setItem(FORM_KEY_STORAGE, JSON.stringify(formData));
 };
 
 const onFormSubmit = e => {
   e.preventDefault();
 
-  const formData = localStorage.getItem(FORM_CONTENT_KEY_STORAGE);
+  if (!refs.emailEl.value || !refs.textareaEl.value) {
+    alert('Please fill in all text fields');
+    return;
+  }
+
   e.currentTarget.reset();
-  formData && console.log(JSON.parse(formData));
-  localStorage.removeItem(FORM_CONTENT_KEY_STORAGE);
+  localStorage.removeItem(FORM_KEY_STORAGE);
+  console.log(formData);
+  formData = {};
 };
 
-formEl.addEventListener('input', _throttle(onInputText, 500));
-formEl.addEventListener('submit', onFormSubmit);
+refs.formEl.addEventListener('input', _throttle(onFormSave, 500));
+refs.formEl.addEventListener('submit', onFormSubmit);
 unsentFormData();
